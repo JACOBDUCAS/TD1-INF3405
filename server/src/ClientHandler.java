@@ -1,3 +1,4 @@
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -13,9 +14,23 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
     }
 
     public void run() { // Création de thread qui envoi un message à un client
-        try {
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream()); // création de canal d’envoi
+        try (
+                DataOutputStream out = new DataOutputStream(socket.getOutputStream()); // création de canal d’envoi
+                DataInputStream in = new DataInputStream(socket.getInputStream());
+                ) {
             out.writeUTF("Hello from server - you are client#" + clientNumber); // envoi de message
+
+            while (true) {
+                if (in.available() > 0) {
+                    String message = in.readUTF();
+
+                    if (message.equals("EXIT")) {
+                        break;
+                    } else {
+                        System.out.println("Client #" + clientNumber + " : " + message);
+                    }
+                }
+            }
         } catch (IOException e) {
             System.out.println("Error handling client# " + clientNumber + ": " + e);
         } finally {
