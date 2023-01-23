@@ -2,14 +2,18 @@ import java.io.*;
 import java.net.Socket;
 import java.util.Objects;
 
+
 // Application client
 public class Main {
     private static Socket socket;
 
     public static void main(String[] args) throws Exception {
         // Adresse et port du serveur
-        String serverAddress = "127.0.0.1";
-        int port = 5000;
+
+
+        InputsHandler  input = new InputsHandler();
+        String serverAddress = input.checkIp();
+        int port = input.checkPort();
         try (
                 // Création d'une nouvelle connexion aves le serveur
                 Socket socket = new Socket(serverAddress, port);

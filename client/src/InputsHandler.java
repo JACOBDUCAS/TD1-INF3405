@@ -7,16 +7,16 @@ public class InputsHandler {
     public String checkIp()
             throws IOException
     {
-            System.out.println("Drop the addy");
-            BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-            String ip = input.readLine();
+        System.out.println("Drop the addy");
+        BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+        String ip = input.readLine();
 
-            IpRegexChecker ipChecker = new IpRegexChecker();
-            while(!ipChecker.isValid(ip)){
-                System.out.println("Drop a good addy");
-                ip = input.readLine();
-            }
-            return ip;
+        IpRegexChecker ipChecker = new IpRegexChecker();
+        while(!ipChecker.isValid(ip)){
+            System.out.println("Drop a good addy");
+            ip = input.readLine();
+        }
+        return ip;
     }
 
     public int checkPort()

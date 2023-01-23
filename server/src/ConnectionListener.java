@@ -23,9 +23,7 @@ public class ConnectionListener extends Thread {
     public void run() {
         int clientNumber = 0;
         // Compteur incrémenté à chaque connexion d'un client au serveur
-        // Adresse et port du serveur
-        //String serverAddress = "127.0.0.1";
-        //int serverPort = 5000;
+
         InputsHandler inputsHandler = new InputsHandler();
         String serverAddress = null;
         try {
