@@ -27,6 +27,7 @@ public class Main {
             while (!Objects.equals(userMessage = stdIn.readLine(), "EXIT")) {
                 if (userMessage.length() > 0) {
                     out.writeUTF(userMessage);
+
                 }
             }
 
