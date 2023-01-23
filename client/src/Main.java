@@ -1,5 +1,6 @@
-import java.io.DataInputStream;
+import java.io.*;
 import java.net.Socket;
+import java.util.Objects;
 
 // Application client
 public class Main {
@@ -9,15 +10,28 @@ public class Main {
         // Adresse et port du serveur
         String serverAddress = "127.0.0.1";
         int port = 5000;
-        // Création d'une nouvelle connexion aves le serveur
-        socket = new Socket(serverAddress, port);
-        System.out.format("Serveur lancé sur [%s:%d]", serverAddress, port);
-        // Céatien d'un canal entrant pour recevoir les messages envoyés, par le serveur
-        DataInputStream in = new DataInputStream(socket.getInputStream());
-        // Attente de la réception d'un message envoyé par le, server sur le canal
-        String helloMessageFromServer = in.readUTF();
-        System.out.println(helloMessageFromServer);
-        // Fermeture de La connexion avec le serveur
-        socket.close();
+        try (
+                // Création d'une nouvelle connexion aves le serveur
+                Socket socket = new Socket(serverAddress, port);
+                // Canal sortant pour envoyer des messages au serveur
+                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+        ) {
+            System.out.println("Serveur lancé sur [" + serverAddress + ":" + port + "]");
+
+            MessageReceiver messageReceiver = new MessageReceiver(socket.getInputStream());
+
+            messageReceiver.start();
+
+            String userMessage;
+            while (!Objects.equals(userMessage = stdIn.readLine(), "EXIT")) {
+                if (userMessage.length() > 0) {
+                    out.writeUTF(userMessage);
+
+                }
+            }
+
+            out.writeUTF(userMessage);
+        }
     }
 }
