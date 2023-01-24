@@ -2,15 +2,18 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Arrays;
+import java.util.*;
 
 public class ClientHandler extends Thread { // pour traiter la demande de chaque client sur un socket particulier
     private Socket socket;
     private boolean isOpen;
 
+    private Queue<String> stringOutputBuffer;
+
     public ClientHandler(Socket socket) {
         this.socket = socket;
         this.isOpen = true;
+        this.stringOutputBuffer = new LinkedList<>();
         System.out.println(socket.getRemoteSocketAddress() + " connected.");
     }
 
@@ -56,7 +59,8 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 DataInputStream in = new DataInputStream(socket.getInputStream());
         ) {
-            out.writeUTF("Hello from the server.");
+            stringOutputBuffer.offer("Hello from the server.");
+            stringOutputBuffer.offer("Second message");
 
             while (isOpen) {
                 if (in.available() > 0) {
@@ -66,6 +70,10 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
 
                     // FIXME: Handle the case where the user sent an invalid number of arguments or bad input
                     handleCommand(message.split(" "));
+                }
+
+                while (!stringOutputBuffer.isEmpty()) {
+                    out.writeUTF(stringOutputBuffer.poll());
                 }
             }
         } catch (IOException e) {
