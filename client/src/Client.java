@@ -32,10 +32,9 @@ public class Client {
             messageReceiver.start();
 
             String userMessage;
-            while (!Objects.equals(userMessage = stdIn.readLine(), "EXIT")) {
+            while (!Objects.equals(userMessage = stdIn.readLine(), "exit")) {
                 if (userMessage.length() > 0) {
                     out.writeUTF(userMessage);
-
                 }
             }
 

@@ -2,23 +2,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ConnectionListener extends Thread {
-    private ConcurrentHashMap<Integer, ClientHandler> clients;
-
-    private ConcurrentLinkedQueue<String> sharedMessagesQueue;
-
-    public ConnectionListener(ConcurrentHashMap<Integer, ClientHandler> clients, ConcurrentLinkedQueue<String> sharedMessageQueue) {
-        this.clients = clients;
-        this.sharedMessagesQueue = sharedMessageQueue;
-    }
-
     public void run() {
-        int clientNumber = 0;
-        // Compteur incrémenté à chaque connexion d'un client au serveur
-
         InputsHandler inputsHandler = new InputsHandler();
 
         String serverAddress;
@@ -45,8 +31,7 @@ public class ConnectionListener extends Thread {
             while (true) {
                 // Important : la fonction accept() est bloquante: attend qu'un prochain client se connecte
                 // Une nouvetle connection : on incémente le compteur clientNumber
-                ClientHandler client = new ClientHandler(Listener.accept(), clientNumber++, sharedMessagesQueue);
-                clients.put(clientNumber - 1, client);
+                ClientHandler client = new ClientHandler(Listener.accept());
                 client.start();
             }
         } catch (IOException e) {
