@@ -1,12 +1,7 @@
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -25,20 +20,16 @@ public class ConnectionListener extends Thread {
         // Compteur incrémenté à chaque connexion d'un client au serveur
 
         InputsHandler inputsHandler = new InputsHandler();
-        String serverAddress = null;
+
+        String serverAddress;
+        int serverPort;
+
         try {
             serverAddress = inputsHandler.checkIp();
+            serverPort = inputsHandler.checkPort();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        int serverPort;
-        try {
-            serverPort = inputsHandler.checkPort();
-        }catch (IOException e){
-            throw new RuntimeException(e);
-        }
-
 
         // Création de la connexien pour communiquer ave les, clients
         try (
