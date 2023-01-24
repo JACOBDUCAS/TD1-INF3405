@@ -1,5 +1,6 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.*;
@@ -22,7 +23,23 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
     }
 
     private void list() {
-        System.out.println("Listing current directory");
+        File currentDir = new File(".");
+        File[] directoryFiles = currentDir.listFiles();
+
+        if (directoryFiles == null) {
+            stringOutputBuffer.offer("Directory is empty.");
+            return;
+        }
+
+        for (File file : directoryFiles) {
+            String fileMessage = file.getName();
+
+            if (file.isDirectory()) {
+                fileMessage += "/";
+            }
+
+            stringOutputBuffer.offer(fileMessage);
+        }
     }
 
     private void createDirectory(String directoryName) {
@@ -59,9 +76,6 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 DataInputStream in = new DataInputStream(socket.getInputStream());
         ) {
-            stringOutputBuffer.offer("Hello from the server.");
-            stringOutputBuffer.offer("Second message");
-
             while (isOpen) {
                 if (in.available() > 0) {
                     String message = in.readUTF().trim();
