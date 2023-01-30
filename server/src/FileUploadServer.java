@@ -26,7 +26,7 @@ public class FileUploadServer {
             String fileName = command.substring(5);
             File f = new File(fileName);
             if(f.exists() && f.isFile()) {
-                int size = 176882;
+                int size = (int) f.length();
                 System.out.println(size);
                 if(size > 0 ) {
                     FileInputStream fis = new FileInputStream(f);

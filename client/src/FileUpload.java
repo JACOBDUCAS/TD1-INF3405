@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Scanner;
 
 public class FileUpload {
@@ -16,13 +18,17 @@ public class FileUpload {
         //
         try {
             
+            // cette section lit l'Adresse IP 
             Scanner scanner = new Scanner(System.in);
             System.out.print("Enter ip adress : ");
             String ip = scanner.nextLine();
     
             System.out.print("Enter file path : ");
             String filePath = scanner.nextLine();
-    
+            String[] pathPart = filePath.split("/");
+            String fileName = pathPart[pathPart.length -1];
+            System.out.print(fileName);
+            // cette section connecte avec le server socket les deux doivent être sur le même port
             Socket socket = new Socket(ip, 5001);
             InputStream is = socket.getInputStream();
             OutputStream os = socket.getOutputStream();
@@ -34,24 +40,22 @@ public class FileUpload {
             pw.println(command);
             pw.flush();
     
-    
-            //String sizeStr = sc.nextLine();
-    
-            int sizeFile = 176882 ;//Integer.parseInt(sizeStr); //revoir cette erreur la
+            // techniquement les lignes 21 à 43 sont inutiles il faut juste pouvoir prendre le path et thats it à partir de la commande
+            int sizeFile = (int) Files.size(Path.of(filePath));
             if(sizeFile == -1) {
                 System.out.println("File " + filePath + " not Found ");
             } else if (sizeFile == 0) {
                 System.out.println("File " + filePath + " Empty ");
             } else  {
-                String FileLocation = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405-1/server/files/image.png";
+                String FileLocation = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/server/files/" + fileName; //prend juste le nom du fichier et met le fichier dans le folder file du serveur
                 FileOutputStream fos = new FileOutputStream(FileLocation);
-                byte b[] = new byte[10000000];
+                byte b[] = new byte[10000000]; //quand je met file size à la place d'un gros chiffre ça fonctionne pas
                 int sum = 0;
                 DataInputStream dis = new DataInputStream(is);
                 System.out.println("on se rend la");
     
                 while(true) {
-                    int n = dis.read(b, 0, 10000000);
+                    int n = dis.read(b, 0, 10000000); //quand je met file size à la place d'un gros chiffre ça fonctionne pas
                     fos.write(b,0,n);
                     sum += n;
                     System.out.println(sum + " bytes downloaded");
