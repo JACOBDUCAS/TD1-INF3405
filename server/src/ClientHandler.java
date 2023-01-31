@@ -3,6 +3,9 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class ClientHandler extends Thread { // pour traiter la demande de chaque client sur un socket particulier
@@ -11,10 +14,13 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
 
     private Queue<String> stringOutputBuffer;
 
+    private String workingDirectory;
+
     public ClientHandler(Socket socket) {
         this.socket = socket;
         this.isOpen = true;
         this.stringOutputBuffer = new LinkedList<>();
+        this.workingDirectory = "./";
         System.out.println(socket.getRemoteSocketAddress() + " connected.");
     }
 
@@ -43,7 +49,16 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
     }
 
     private void createDirectory(String directoryName) {
-        System.out.println("Creating directory " + directoryName);
+        // FIXME: Test to handle invalid paths
+        Path path = Paths.get(workingDirectory + directoryName);
+        try {
+            Files.createDirectory(path);
+            stringOutputBuffer.offer("Created directory " + path);
+        } catch (IOException e) {
+            // FIXME: Handle this properly, handle FileAlreadyExistsException for more specific error message
+            System.out.println("IOException: " + e.getMessage());
+            stringOutputBuffer.offer("Failed to create directory " + path);
+        }
     }
 
     private void upload(String fileName) {
