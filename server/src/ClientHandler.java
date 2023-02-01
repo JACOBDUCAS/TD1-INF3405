@@ -75,37 +75,59 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
     }
 
     private void upload(String fileName) {
+        try {
+            String sourcePath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/client/files/" + fileName;
+            int sizeFile = (int) Files.size(Path.of(sourcePath));
+            if (sizeFile == -1) {
+                System.out.println("File : " + sourcePath + " not Found ");
+            } else if (sizeFile == 0) {
+                System.out.println("File : " + sourcePath + " Empty ");
+            } else {
+                String destinationPath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/server/files/" + fileName; 
+                FileOutputStream fos = new FileOutputStream(destinationPath);
+                FileInputStream fis = new FileInputStream(sourcePath);
+                byte b[] = new byte[10000000]; 
+                int fileLenght = 0;
+                
+                while (fileLenght < sizeFile) {
+                    int n = fis.read(b, 0, 10000000); 
+                    fos.write(b, 0, n);
+                    fileLenght += n;
+                }
+                fos.close();
+                fis.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.out.println("Uploaded " + fileName);
     }
 
     private void download(String fileName) {
-        System.out.println("Downloaded " + fileName);
         try {
             String sourcePath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/server/files/" + fileName;
-            System.out.print(fileName);
-
             int sizeFile = (int) Files.size(Path.of(sourcePath));
             if (sizeFile == -1) {
-                System.out.println("File " + sourcePath + " not Found ");
+                System.out.println("File : " + sourcePath + " not Found ");
             } else if (sizeFile == 0) {
-                System.out.println("File " + sourcePath + " Empty ");
+                System.out.println("File : " + sourcePath + " Empty ");
             } else {
                 String destinationPath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/client/files/" + fileName;
                 FileInputStream fis = new FileInputStream(new File(sourcePath));
                 FileOutputStream fos = new FileOutputStream(new File(destinationPath));
                 byte b[] = new byte[10000000];
-                int sum = 0;
-
-                while (sum < sizeFile) {
+                int fileLenght = 0;
+                
+                while (fileLenght < sizeFile) {
                     int n = fis.read(b, 0, 10000000);
                     fos.write(b, 0, n);
-                    sum += n;
-                    System.out.println(sum + " bytes downloaded");
+                    fileLenght += n;
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Downloaded " + fileName);
     }
 
     private void exit() {

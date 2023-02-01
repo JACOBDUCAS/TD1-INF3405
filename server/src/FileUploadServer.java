@@ -1,52 +1,45 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Scanner;
 
 public class FileUploadServer {
-    
+
     public static void main(String[] args) {
         try {
-            ServerSocket ss = new ServerSocket(5001);
-            while(true) {
-            Socket s = ss.accept();
-            InputStream is = s.getInputStream();
-            OutputStream os = s.getOutputStream();
-            Scanner sc = new Scanner(is);
-            PrintWriter pw = new PrintWriter(os);
-            String command = sc.nextLine();
-            String fileName = command.substring(5);
-            File f = new File(fileName);
-            if(f.exists() && f.isFile()) {
-                int size = (int) f.length();
-                System.out.println(size);
-                if(size > 0 ) {
-                    FileInputStream fis = new FileInputStream(f);
-                    DataInputStream dis = new DataInputStream(fis);
-                    byte b[] = new byte[size];
-                    dis.readFully(b);
-                    System.out.println("read file succeeded");
-                    fis.close();
-    
-                    DataOutputStream dos = new DataOutputStream(os);
-                    dos.write(b);
-                    System.out.println("Send file success");
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter file name : ");
+            String fileName = scanner.nextLine();
+            String sourcePath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/client/files/" + fileName;
+            System.out.print(fileName);
+
+            int sizeFile = (int) Files.size(Path.of(sourcePath));
+            if (sizeFile == -1) {
+                System.out.println("File " + sourcePath + " not Found ");
+            } else if (sizeFile == 0) {
+                System.out.println("File " + sourcePath + " Empty ");
+            } else {
+                String destinationPath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/server/files/" + fileName; 
+                FileOutputStream fos = new FileOutputStream(destinationPath);
+                FileInputStream fis = new FileInputStream(sourcePath);
+                byte b[] = new byte[10000000]; 
+                int sum = 0;
+                System.out.println("on se rend la");
+
+                while (sum < sizeFile) {
+                    int n = fis.read(b, 0, 10000000); 
+                    fos.write(b, 0, n);
+                    sum += n;
+                    System.out.println(sum + " bytes downloaded");
                 }
-                else {
-                    pw.println(-1);
-                    pw.flush();
-                }
-            }
+                System.out.println("file downloaded succesfully");
+                fos.close();
+                fis.close();
+
             }
         } catch (IOException e) {
-            // TODO: handle exception
             e.printStackTrace();
         }
     }
