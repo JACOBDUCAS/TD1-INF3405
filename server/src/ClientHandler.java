@@ -1,10 +1,11 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -66,7 +67,8 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
             Files.createDirectory(path);
             stringOutputBuffer.offer("Created directory " + directoryName);
         } catch (IOException e) {
-            // FIXME: Handle this properly, handle FileAlreadyExistsException for more specific error message
+            // FIXME: Handle this properly, handle FileAlreadyExistsException for more
+            // specific error message
             System.out.println("IOException: " + e.getMessage());
             stringOutputBuffer.offer("Failed to create directory " + directoryName);
         }
@@ -78,6 +80,32 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
 
     private void download(String fileName) {
         System.out.println("Downloaded " + fileName);
+        try {
+            String sourcePath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/server/files/" + fileName;
+            System.out.print(fileName);
+
+            int sizeFile = (int) Files.size(Path.of(sourcePath));
+            if (sizeFile == -1) {
+                System.out.println("File " + sourcePath + " not Found ");
+            } else if (sizeFile == 0) {
+                System.out.println("File " + sourcePath + " Empty ");
+            } else {
+                String destinationPath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/client/files/" + fileName;
+                FileInputStream fis = new FileInputStream(new File(sourcePath));
+                FileOutputStream fos = new FileOutputStream(new File(destinationPath));
+                byte b[] = new byte[10000000];
+                int sum = 0;
+
+                while (sum < sizeFile) {
+                    int n = fis.read(b, 0, 10000000);
+                    fos.write(b, 0, n);
+                    sum += n;
+                    System.out.println(sum + " bytes downloaded");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void exit() {
@@ -100,15 +128,15 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
     public void run() { // Création de thread qui envoi un message à un client
         try (
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                DataInputStream in = new DataInputStream(socket.getInputStream());
-        ) {
+                DataInputStream in = new DataInputStream(socket.getInputStream());) {
             while (isOpen) {
                 if (in.available() > 0) {
                     String message = in.readUTF().trim();
 
                     System.out.println(socket.getRemoteSocketAddress() + " : " + message);
 
-                    // FIXME: Handle the case where the user sent an invalid number of arguments or bad input
+                    // FIXME: Handle the case where the user sent an invalid number of arguments or
+                    // bad input
                     handleCommand(message.split(" "));
                 }
 
