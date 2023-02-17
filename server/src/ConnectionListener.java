@@ -5,14 +5,12 @@ import java.net.ServerSocket;
 
 public class ConnectionListener extends Thread {
     public void run() {
-        InputsHandler inputsHandler = new InputsHandler();
-
         String serverAddress;
         int serverPort;
 
         try {
-            serverAddress = inputsHandler.checkIp();
-            serverPort = inputsHandler.checkPort();
+            serverAddress = AddressInputHandler.getIp();
+            serverPort = AddressInputHandler.getPort();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

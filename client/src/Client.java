@@ -8,13 +8,12 @@ public class Client {
     private boolean isOpen = true;
 
     public void start() {
-        InputsHandler input = new InputsHandler();
         String serverAddress = "";
         int port = 0;
 
         try {
-            serverAddress = input.checkIp();
-            port = input.checkPort();
+            serverAddress = AddressInputHandler.getIp();
+            port = AddressInputHandler.getPort();
         } catch (IOException e) {
             System.out.println(e);
         }
@@ -26,7 +25,7 @@ public class Client {
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
         ) {
-            System.out.println("Serveur lancé sur [ " + serverAddress + " : " + port + " ]");
+            System.out.println("Server is running on [ " + serverAddress + " : " + port + " ]");
 
             MessageReceiver messageReceiver = new MessageReceiver(socket.getInputStream());
 
