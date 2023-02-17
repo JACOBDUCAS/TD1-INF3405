@@ -1,12 +1,10 @@
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class Client {
+    private static final int FILE_BUFFER_SIZE = 2048;
     private boolean isOpen = true;
 
     public void start() {
@@ -61,10 +59,30 @@ public class Client {
 
     private void sendFile(DataOutputStream out, String[] arguments) {
         if (arguments.length < 2 || !fileExists(arguments[1])) {
+            System.out.println("File is not valid");
             return;
         }
 
-        System.out.println("Uploading " + arguments[1]);
+        File file = Paths.get(arguments[1]).toFile();
+
+        // Adapted from https://heptadecane.medium.com/file-transfer-via-java-sockets-e8d4f30703a5
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            long fileSize = file.length();
+
+            out.writeLong(fileSize);
+
+            byte[] fileBuffer = new byte[FILE_BUFFER_SIZE];
+            int nbBytesToWrite = 0;
+
+            System.out.println("Uploading " + arguments[1]);
+
+            while ((nbBytesToWrite = fileInputStream.read(fileBuffer)) != -1) {
+                out.write(fileBuffer, 0, nbBytesToWrite);
+                out.flush();
+            }
+        } catch (IOException e) {
+            System.out.println("Client.sendFile : " + e.getMessage());
+        }
     }
 
     private boolean fileExists(String path) {

@@ -10,13 +10,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class ClientHandler extends Thread { // pour traiter la demande de chaque client sur un socket particulier
+public class ClientHandler extends Thread {
+    // pour traiter la demande de chaque client sur un socket particulier
+    private static final int FILE_BUFFER_SIZE = 2048;
+
     private Socket socket;
     private boolean isOpen;
 
     private Queue<String> stringOutputBuffer;
 
     private String workingDirectory;
+
+    private DataInputStream dataInputStream;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -74,33 +79,29 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
         }
     }
 
+    // Adapted from https://heptadecane.medium.com/file-transfer-via-java-sockets-e8d4f30703a5
     private void upload(String fileName) {
-        try {
-            String sourcePath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/client/files/" + fileName;
-            int sizeFile = (int) Files.size(Path.of(sourcePath));
-            if (sizeFile == -1) {
-                System.out.println("File : " + sourcePath + " not Found ");
-            } else if (sizeFile == 0) {
-                System.out.println("File : " + sourcePath + " Empty ");
-            } else {
-                String destinationPath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/server/files/" + fileName; 
-                FileOutputStream fos = new FileOutputStream(destinationPath);
-                FileInputStream fis = new FileInputStream(sourcePath);
-                byte b[] = new byte[10000000]; 
-                int fileLenght = 0;
-                
-                while (fileLenght < sizeFile) {
-                    int n = fis.read(b, 0, 10000000); 
-                    fos.write(b, 0, n);
-                    fileLenght += n;
+        String destinationPath = workingDirectory + fileName;
+
+        try (FileOutputStream fos = new FileOutputStream(destinationPath)) {
+            long bytesToRead = dataInputStream.readLong();
+
+            byte[] fileBuffer = new byte[FILE_BUFFER_SIZE];
+
+            // FIXME: Make sure we don't get stuck in the loop if the file isn't actually sent
+            while (bytesToRead > 0) {
+                int bytesRead = dataInputStream.read(fileBuffer);
+
+                if (bytesRead == -1) {
+                    break;
                 }
-                fos.close();
-                fis.close();
+
+                fos.write(fileBuffer, 0, bytesRead);
+                bytesToRead -= bytesRead;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("ClientHandler.upload : " + e.getMessage());
         }
-        System.out.println("Uploaded " + fileName);
     }
 
     private void download(String fileName) {
@@ -117,7 +118,7 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
                 FileOutputStream fos = new FileOutputStream(new File(destinationPath));
                 byte b[] = new byte[10000000];
                 int fileLenght = 0;
-                
+
                 while (fileLenght < sizeFile) {
                     int n = fis.read(b, 0, 10000000);
                     fos.write(b, 0, n);
@@ -150,8 +151,10 @@ public class ClientHandler extends Thread { // pour traiter la demande de chaque
     public void run() { // Création de thread qui envoi un message à un client
         try (
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                DataInputStream in = new DataInputStream(socket.getInputStream());) {
+                DataInputStream in = new DataInputStream(socket.getInputStream())) {
             while (isOpen) {
+                dataInputStream = in;
+
                 if (in.available() > 0) {
                     String message = in.readUTF().trim();
 
