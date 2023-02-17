@@ -4,7 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class Client {
-    private static final int FILE_BUFFER_SIZE = 2048;
+    public static final int FILE_BUFFER_SIZE = 2048;
     private boolean isOpen = true;
 
     public void start() {

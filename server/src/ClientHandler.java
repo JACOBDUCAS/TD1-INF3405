@@ -23,6 +23,8 @@ public class ClientHandler extends Thread {
 
     private DataInputStream dataInputStream;
 
+    private DataOutputStream dataOutputStream;
+
     public ClientHandler(Socket socket) {
         this.socket = socket;
         this.isOpen = true;
@@ -104,31 +106,37 @@ public class ClientHandler extends Thread {
         }
     }
 
-    private void download(String fileName) {
-        try {
-            String sourcePath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/server/files/" + fileName;
-            int sizeFile = (int) Files.size(Path.of(sourcePath));
-            if (sizeFile == -1) {
-                System.out.println("File : " + sourcePath + " not Found ");
-            } else if (sizeFile == 0) {
-                System.out.println("File : " + sourcePath + " Empty ");
-            } else {
-                String destinationPath = "/Users/amiratamakloe/IdeaProjects/TD1-INF3405/client/files/" + fileName;
-                FileInputStream fis = new FileInputStream(new File(sourcePath));
-                FileOutputStream fos = new FileOutputStream(new File(destinationPath));
-                byte b[] = new byte[10000000];
-                int fileLenght = 0;
+    private void download(String fileName) throws IOException {
+        if (!fileExists(fileName)) {
+            dataOutputStream.writeUTF("Invalid file name");
+            return;
+        }
 
-                while (fileLenght < sizeFile) {
-                    int n = fis.read(b, 0, 10000000);
-                    fos.write(b, 0, n);
-                    fileLenght += n;
-                }
+        File file = Paths.get(fileName).toFile();
+
+        // Adapted from https://heptadecane.medium.com/file-transfer-via-java-sockets-e8d4f30703a5
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            dataOutputStream.writeUTF("Downloading " + fileName);
+
+            long fileSize = file.length();
+
+            dataOutputStream.writeLong(fileSize);
+
+            byte[] fileBuffer = new byte[FILE_BUFFER_SIZE];
+            int nbBytesToWrite = 0;
+
+            while ((nbBytesToWrite = fileInputStream.read(fileBuffer)) != -1) {
+                dataOutputStream.write(fileBuffer, 0, nbBytesToWrite);
+                dataOutputStream.flush();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("ClientHandler.download : " + e.getMessage());
         }
         System.out.println("Downloaded " + fileName);
+    }
+
+    private boolean fileExists(String path) {
+        return Files.isRegularFile(Paths.get(path));
     }
 
     private void exit() {
@@ -136,7 +144,7 @@ public class ClientHandler extends Thread {
         isOpen = false;
     }
 
-    private void handleCommand(String[] arguments) {
+    private void handleCommand(String[] arguments) throws IOException {
         switch (arguments[0]) {
             case "cd" -> changeDirectory(arguments[1]);
             case "ls" -> list();
@@ -153,6 +161,7 @@ public class ClientHandler extends Thread {
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 DataInputStream in = new DataInputStream(socket.getInputStream())) {
             while (isOpen) {
+                dataOutputStream = out;
                 dataInputStream = in;
 
                 if (in.available() > 0) {
