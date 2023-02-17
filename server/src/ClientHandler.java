@@ -8,16 +8,18 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class ClientHandler extends Thread {
     // pour traiter la demande de chaque client sur un socket particulier
     private static final int FILE_BUFFER_SIZE = 2048;
 
-    private Socket socket;
+    private final Socket socket;
     private boolean isOpen;
 
-    private Queue<String> stringOutputBuffer;
+    private final Queue<String> stringOutputBuffer;
 
     private String workingDirectory;
 
@@ -156,6 +158,21 @@ public class ClientHandler extends Thread {
         }
     }
 
+    private void logCommand(String message) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd @ HH:mm:ss");
+        LocalDateTime time = LocalDateTime.now();
+
+        String logMessage = "[" +
+                socket.getRemoteSocketAddress() +
+                " - " +
+                dateTimeFormatter.format(time) +
+                "]" +
+                ": " +
+                message;
+
+        System.out.println(logMessage);
+    }
+
     public void run() { // Création de thread qui envoi un message à un client
         try (
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -167,7 +184,7 @@ public class ClientHandler extends Thread {
                 if (in.available() > 0) {
                     String message = in.readUTF().trim();
 
-                    System.out.println(socket.getRemoteSocketAddress() + " : " + message);
+                    logCommand(message);
 
                     // FIXME: Handle the case where the user sent an invalid number of arguments or
                     // bad input

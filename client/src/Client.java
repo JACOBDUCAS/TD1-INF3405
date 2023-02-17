@@ -25,7 +25,7 @@ public class Client {
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
         ) {
-            System.out.println("Server is running on [ " + serverAddress + " : " + port + " ]");
+            System.out.println("You are connected to the server at " + serverAddress + ":" + port);
 
             MessageReceiver messageReceiver = new MessageReceiver(socket.getInputStream());
 
