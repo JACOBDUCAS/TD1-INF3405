@@ -109,12 +109,14 @@ public class ClientHandler extends Thread {
     }
 
     private void download(String fileName) throws IOException {
-        if (!fileExists(fileName)) {
+        String filePath = workingDirectory + fileName;
+
+        if (!fileExists(filePath)) {
             dataOutputStream.writeUTF("Invalid file name");
             return;
         }
 
-        File file = Paths.get(fileName).toFile();
+        File file = Paths.get(filePath).toFile();
 
         // Adapted from https://heptadecane.medium.com/file-transfer-via-java-sockets-e8d4f30703a5
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
@@ -134,7 +136,6 @@ public class ClientHandler extends Thread {
         } catch (IOException e) {
             System.out.println("ClientHandler.download : " + e.getMessage());
         }
-        System.out.println("Downloaded " + fileName);
     }
 
     private boolean fileExists(String path) {
