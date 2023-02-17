@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class MessageReceiver extends Thread {
+    private boolean running = true;
     private InputStream inputStream;
 
     public MessageReceiver(InputStream inputStream) {
@@ -16,7 +17,7 @@ public class MessageReceiver extends Thread {
                 // Céatien d'un canal entrant pour recevoir les messages envoyés, par le serveur
                 DataInputStream in = new DataInputStream(inputStream)
         ) {
-            while (true) {
+            while (running) {
                 if (in.available() > 0) {
                     // Attente de la réception d'un message envoyé par le, server sur le canal
                     String message = in.readUTF();
@@ -29,7 +30,7 @@ public class MessageReceiver extends Thread {
                 }
             }
         } catch (IOException e) {
-            System.out.println("IOException : " + e.getMessage());
+            System.out.println("MessageReceiver.run : " + e.getMessage());
         }
     }
 
@@ -54,5 +55,9 @@ public class MessageReceiver extends Thread {
         } catch (IOException e) {
             System.out.println("MessageReceiver.downloadFile : " + e.getMessage());
         }
+    }
+
+    public void stopReception() {
+        this.running = false;
     }
 }

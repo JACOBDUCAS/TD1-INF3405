@@ -38,8 +38,10 @@ public class Client {
 
                 handleCommand(out, userMessage.split(" "));
             }
+
+            messageReceiver.stopReception();
         } catch (IOException e) {
-            System.out.println("Error: " + e.getMessage());
+            System.out.println("Client.start : " + e.getMessage());
         }
     }
 
